@@ -2,6 +2,7 @@
 
 setRepositories()
 library(tidyverse)
+library(janitor)
 library(ggplot2)
 library(sf)
 library(rnaturalearth)
@@ -9,6 +10,7 @@ library(rnaturalearthdata)
 library(osmdata)
 library(ggmap)
 library(sf)
+library(htmlwidgets)
 
 install.packages("rvest", dependencies = TRUE)
 library(rvest)
@@ -162,6 +164,8 @@ leaflet() %>%
               color = "blue")
 
 
+# Final plot version 1 ----
+
 
 leaflet() %>% 
   addTiles() %>% 
@@ -169,14 +173,88 @@ leaflet() %>%
               lat = ~Y,
               lng = ~X, color = "green",  opacity = 0.8, weight =2) %>% 
   addProviderTiles(providers$Stadia.Outdoors) %>% 
-  addCircleMarkers(data = coordinates_fsd, 
+  addCircleMarkers(data = final_farm_data, 
                    lat = ~lat, 
                    lng = ~long, 
-                   color = "red",
+                   color = ~palette(type),
                    radius = 4, 
-                   fillOpacity = 0.8) %>% 
-  addPolylines(data = drains, color = "blue", weight =3, opacity = 0.7)
+                   fillOpacity = 0.8,
+                   popup = 
+                   ) %>% 
+  addPolylines(data = drains, color = "purple", weight =3, opacity = 0.7) %>%
+  addLegend( data = final_farm_data,
+    "bottomright",
+    pal = palette,
+    values = ~type,
+    title = "Sampling Sites",
+    opacity = 1
+  )
 
 
+# Final plot version 2 -----
+
+leaflet() %>% 
+  addTiles() %>% 
+  addPolygons(data = multipolygonal_coord, 
+              lat = ~Y,
+              lng = ~X, color = "green",  opacity = 0.8,
+              weight =2) %>% 
+  addProviderTiles( provider =  providers$Stadia.Outdoors,
+                   options = providerTileOptions(api_key= "24ad6145-811b-4acb-8d4a-dcc1bd66dac5" )) %>% 
+  addCircleMarkers(data = final_farm_data, 
+                   lat = ~lat, 
+                   lng = ~long, 
+                   color = ~palette(type),
+                   radius = 4, 
+                   fillOpacity = 0.8,
+                   popup = ~popups
+  ) %>% 
+  addPolylines(data = drains, color = "purple",
+               weight =3, opacity = 0.7, popup = ~popups) %>%
+  addLegend("bottomright",
+            colors = c("red","blue","orange","purple"),
+            labels = c("Pharmaceutical Industry",
+                       "Poultry Farm", "Textile Industry",
+                       "Sewage Drain"),
+             title = "Sampling Sites",
+             opacity = 1
+  )
+
+
+
+
+
+map <- leaflet() %>% 
+  addTiles() %>% 
+  addPolygons(data = multipolygonal_coord, 
+              lat = ~Y,
+              lng = ~X, color = "green",  opacity = 0.8,
+              weight =2) %>% 
+  addProviderTiles( provider =  providers$Stadia.Outdoors,
+                    options = providerTileOptions(api_key= "24ad6145-811b-4acb-8d4a-dcc1bd66dac5" )) %>% 
+  addCircleMarkers(data = final_farm_data, 
+                   lat = ~lat, 
+                   lng = ~long, 
+                   color = ~palette(type),
+                   radius = 4, 
+                   fillOpacity = 0.8,
+                   popup = ~popups
+  ) %>% 
+  addPolylines(data = drains, color = "purple",
+               weight =3, opacity = 0.7, popup = ~popups) %>%
+  addLegend("bottomright",
+            colors = c("red","blue","orange","purple"),
+            labels = c("Pharmaceutical Industry",
+                       "Poultry Farm", "Textile Industry",
+                       "Sewage Drain"),
+            title = "Sampling Sites",
+            opacity = 1
+  )
+
+
+# Saving map as an html widget -----
+
+
+saveWidget(map, "map.html", selfcontained = TRUE)
 
 
